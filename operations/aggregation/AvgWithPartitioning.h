@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <vector>
 #include <unordered_map>
 #include <functional>
@@ -14,15 +15,19 @@ std::vector<std::pair<Key_t, Value_t>> AvgWithPartitioning(const std::vector<std
     
     if (kv_array.empty())return {};
 
-    size_t parts_num = kv_array.size()/ block_size;
+    size_t parts_num = (kv_array.size() + block_size - 1) / block_size;
     if (parts_num == 0)parts_num = 1;
 
     std::vector<std::vector<std::pair<Key_t, Value_t>>> partitions(parts_num);
     std::hash<Key_t> hasher;
+    std::hash<size_t> size_hasher;
     std::vector<std::pair<Key_t, Value_t>> result;
 
     for (int i = 0;i < kv_array.size();i++){
-        size_t idx = hasher(kv_array[i].first) % parts_num;
+        size_t hash1 = hasher(kv_array[i].first);
+        size_t hash2 = size_hasher(hash1);
+        
+        size_t idx = hash2 % parts_num;
         partitions[idx].push_back(kv_array[i]);
     }
 
